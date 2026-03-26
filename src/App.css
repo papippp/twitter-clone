@@ -476,6 +476,8 @@ body {
     .tabs-container {
         overflow-x: auto;
         padding-bottom: 5px;
+        display: flex;
+        justify-content: center;
     }
     
     .tab-btn {
