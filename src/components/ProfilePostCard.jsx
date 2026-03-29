@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Row, Col, Image, Button } from 'react-bootstrap';
 import { useTheme } from './ThemeContext';
+import EditPostModal from './EditPostModal';
+import { AuthContext } from './AuthProvider';
+import { useDispatch } from 'react-redux';
+import { deletePost } from '../features/posts/postSlice';
 
 
 export default function ProfilePostCard({ post }) {
     const { isDark } = useTheme()
     // CHANGE: Track interaction states
-    const [liked, setLiked] = useState(false);
-    const [retweeted, setRetweeted] = useState(false);
-    
+       
     const pic = 'https://res.cloudinary.com/dqcztgs4v/image/upload/v1736165834/WhatsApp_Image_2025-01-06_at_7.09.10_PM_1_oqzrzf.jpg';
-
+    const [showModal, setShowModal] = useState(false)
+    const handleShow = () => setShowModal(true)
+    const handleClose = () => setShowModal(false)
+    const {currentUser} = useContext(AuthContext)
+    const userId = currentUser?.uid
+    const dispatch = useDispatch()
+    const handleDelete = () => {
+      if ( window.confirm('are you sure you want to delete this posts'))
+        dispatch(deletePost({userId : currentUser?.uid,postId : post.id}))
+    }
     return (
         <div className={`post-card p-3 ${isDark ? 'dark' : ''}`}>
             <Row>
@@ -26,41 +37,32 @@ export default function ProfilePostCard({ post }) {
                 
                 <Col xs={10} md={10} lg={11}>
                     {/* CHANGE: Better header layout */}
-                    <div className="d-flex align-items-center flex-wrap gap-2">
-                        <strong className="post-author">{post.user}</strong>
-                        <span className="post-handle">{post.handle}</span>
-                        <span className="post-date">· {post.date}</span>
-                    </div>
+                    
                     
                     <p className="post-content mt-2">{post.content}</p>
                     
                     {/* CHANGE: Interactive action buttons */}
                     <div className="post-actions d-flex justify-content-between mt-3">
-                        <Button variant="link" className="action-btn">
-                            <i className="bi bi-chat"></i>
-                            <span className="ms-2">{post.replies}</span>
+                        <Button onClick={handleShow} variant="link" className="action-btn">
+                            <i className="bi bi-pencil"></i>                            
                         </Button>
                         
                         <Button 
                             variant="link" 
-                            className={`action-btn ${retweeted ? 'text-success' : ''}`}
-                            onClick={() => setRetweeted(!retweeted)}
+                            className={'action-btn text-success'}
+                            onClick={handleDelete}
                         >
-                            <i className="bi bi-repeat"></i>
-                            <span className="ms-2">
-                                {post.retweets + (retweeted ? 1 : 0)}
-                            </span>
+                            <i className="bi bi-trash"></i>
+                            
                         </Button>
                         
                         <Button 
                             variant="link" 
-                            className={`action-btn ${liked ? 'text-danger' : ''}`}
-                            onClick={() => setLiked(!liked)}
+                            className={`action-btn  text-danger`}
+                           
                         >
-                            <i className={`bi bi-heart${liked ? '-fill' : ''}`}></i>
-                            <span className="ms-2">
-                                {post.likes + (liked ? 1 : 0)}
-                            </span>
+                            <i className={`bi bi-heart `}></i>
+                            
                         </Button>
                         
                         <Button variant="link" className="action-btn">
@@ -69,6 +71,7 @@ export default function ProfilePostCard({ post }) {
                     </div>
                 </Col>
             </Row>
+            <EditPostModal postId={post.id} show={showModal} handleClose={handleClose} userId={userId} />
         </div>
     );
 }

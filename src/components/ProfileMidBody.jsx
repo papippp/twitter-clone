@@ -1,33 +1,28 @@
-import React, { useState } from 'react'
-import { Button, Form, Image, Nav, Row } from 'react-bootstrap'
+import React, { useContext, useEffect, useState } from 'react'
+import { Button, Form, Image, Nav, Row, Spinner } from 'react-bootstrap'
 import ProfilePostCard from './ProfilePostCard'
 import { useTheme } from './ThemeContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { AuthContext } from './AuthProvider'
+import { fetchPostsByUser, savePost } from '../features/posts/postSlice'
 
 export default function ProfileMidBody({activeTab}) {
    const {isDark} = useTheme()
-   const [tweet, setTweet] = useState('')
-    const mockPosts = [
-        {
-            id: 1,
-            user: 'Papi',
-            handle: '@papi.ppp',
-            content: 'Heyy',
-            date: 'Mar 16',
-            likes: 24,
-            replies: 3,
-            retweets: 5
-        },
-        {
-            id: 2,
-            user: 'Papi',
-            handle: '@papi.ppp',
-            content: 'Working on my Twitter clone! 🚀',
-            date: 'Mar 15',
-            likes: 42,
-            replies: 7,
-            retweets: 12
-        }
-    ]
+   const dispatch = useDispatch()
+   const {currentUser} = useContext(AuthContext)
+   useEffect(() => {
+    dispatch(fetchPostsByUser(currentUser.uid))
+   },[currentUser, dispatch])
+   const posts = useSelector((state) => state.posts.posts)
+   const loading = useSelector((state) => state.posts.loading)
+   const [postContent, setPostContent] = useState('')
+   const userId = currentUser?.uid
+
+   const handleSave = (e) => {
+    e.preventDefault()
+    dispatch(savePost({userId,postContent}))
+    setPostContent('')
+   } 
 
   return (
     <div className={`profile-mid-body ${isDark ? 'dark' : ''}`}>
@@ -40,13 +35,13 @@ export default function ProfileMidBody({activeTab}) {
                         className="me-3"
                         style={{ width: '50px', height: '50px' }}
                     />
-                    <Form className="flex-grow-1">
+                    <Form className="flex-grow-1" onSubmit={handleSave}>
                         <Form.Control
                             as="textarea"
                             rows={3}
                             placeholder="What's happening?"
-                            value={tweet}
-                            onChange={(e) => setTweet(e.target.value)}
+                            value={postContent}
+                            onChange={(e) => setPostContent(e.target.value)}
                             className="tweet-input border-0"
                         />
                         <div className="d-flex justify-content-end mt-3">
@@ -54,7 +49,7 @@ export default function ProfileMidBody({activeTab}) {
                                 type="submit" 
                                 variant="primary" 
                                 className="rounded-pill px-4"
-                                disabled={!tweet.trim()}
+                                disabled={!postContent.trim()}
                             >
                                 Tweet
                             </Button>
@@ -70,7 +65,10 @@ export default function ProfileMidBody({activeTab}) {
 
             {/* CHANGE: Posts Feed */}
             <div className="posts-feed">
-                {mockPosts.map(post => (
+                { loading && <Spinner animation='border' variant='primary' />
+
+                }
+                {posts.map(post => (
                     <ProfilePostCard key={post.id} post={post} />
                 ))}
             </div>

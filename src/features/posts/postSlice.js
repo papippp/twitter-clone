@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 export const fetchPostsByUser = createAsyncThunk(
@@ -47,6 +47,54 @@ export const savePost = createAsyncThunk(
         }
     }
 )
+
+export const EditPost = createAsyncThunk(
+    'posts/editPost',
+    async({userId, postId, updatedContent}) => {
+        try {
+            const postRef = doc(db, `users/${userId}/posts/${postId}`)
+            const docSnap = await getDoc(postRef)
+            if (docSnap.exists()) {
+                await updateDoc(postRef, {
+                    content : updatedContent
+                })
+                const updatedDoc = await getDoc(postRef)
+                const updatedPost = {
+                    id : updatedDoc.id, 
+                    ...updatedDoc.data()
+                }
+                return updatedPost
+            } else {
+                throw  Error('post does not exist')
+            }
+        }
+        catch (error) {
+            console.error(error)
+            throw  error
+        }
+    }
+)
+
+export const deletePost = createAsyncThunk(
+    'post/deletePost',
+    async ({userId, postId}) => {
+       try{ const postRef = doc(db, `users/${userId}/posts/${postId}`)
+       const docSnap = await getDoc(postRef)
+       if (docSnap.exists()) {
+        await deleteDoc(postRef)
+       }
+       return {userId, postId}
+
+       }
+       catch (error) {
+        console.error(error)
+        throw Error('post does not exist')
+       }
+    }
+
+)
+
+
 
 export const likePost = createAsyncThunk(
     'posts/likePost',
@@ -104,12 +152,23 @@ const postsSlice = createSlice({
         .addCase(savePost.fulfilled, (state,action) => {
             state.posts = [action.payload, ...state.posts]
         })
+        .addCase(EditPost.fulfilled, (state, action) => {
+            const updatedPost = action.payload
+            const index = state.posts.findIndex((post) => post.id === updatedPost.id)
+            if (index !== -1) {
+                state.posts[index] = updatedPost
+            }
+        })
         .addCase(likePost.fulfilled, (state, action) => {
             const {userId, postId} = action.payload
             const postIndex = state.posts.findIndex((post) => post.id === postId)
             if (postIndex !== -1) {
                 state.posts[postIndex].likes.push(userId)
             }
+        })
+        .addCase(deletePost.fulfilled, (state, action) => {
+            const {postId} = action.payload
+            state.posts = state.posts.filter((post) => post.id !== postId)
         })
         .addCase(removeLikeFromPost.fulfilled, (state,action) => {
             const {userId, postId} = action.payload
