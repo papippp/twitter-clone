@@ -141,9 +141,9 @@ export default function ProfilePage() {
 
             {/* Profile Tabs */}
             <div className="profile-tabs">
-                <Container>
+                <Container className='d-flex justify-content-center align-items-center' >
                     <div className="tabs-container">
-                        {['tweets', 'replies', 'media', 'likes'].map(tab => (
+                        {['All tweets', 'my tweets'].map(tab => (
                             <button
                                 key={tab}
                                 className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
