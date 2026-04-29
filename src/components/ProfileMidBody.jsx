@@ -5,36 +5,40 @@ import { useTheme } from './ThemeContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { AuthContext } from './AuthProvider'
 import { fetchPostsByUser, savePost } from '../features/posts/postSlice'
+import { useUserAvatar } from '../hooks/useUserAvatar'
 
 export default function ProfileMidBody({activeTab}) {
    const {isDark} = useTheme()
    const dispatch = useDispatch()
    const {currentUser} = useContext(AuthContext)
    useEffect(() => {
-    dispatch(fetchPostsByUser(currentUser.uid))
+    dispatch(fetchPostsByUser())
    },[currentUser, dispatch])
-   const posts = useSelector((state) => state.posts.posts)
+   const allPosts = useSelector((state) => state.posts.posts)
+   const posts = activeTab === 'my tweets' ? allPosts.filter((post) => post.userId === currentUser.uid) : allPosts
    const loading = useSelector((state) => state.posts.loading)
    const [postContent, setPostContent] = useState('')
    const userId = currentUser?.uid
-
+   const username = currentUser?.email?.split('@')[0]
+   const currentUserAvatar = useUserAvatar(currentUser?.uid)
+   const DEFAULT_AVATAR = 'https://res.cloudinary.com/dqcztgs4v/image/upload/v1731486722/cld-sample.jpg'
    const handleSave = (e) => {
     e.preventDefault()
-    dispatch(savePost({userId,postContent}))
+    dispatch(savePost({userId,postContent,username}))
     setPostContent('')
    } 
 
   return (
     <div className={`profile-mid-body ${isDark ? 'dark' : ''}`}>
             {/* CHANGE: Compose Tweet area */}
+            {activeTab === 'All tweets' &&(
             <div className="compose-tweet p-3">
                 <div className="d-flex">
-                    <Image 
-                        src="https://res.cloudinary.com/dqcztgs4v/image/upload/v1736165834/WhatsApp_Image_2025-01-06_at_7.09.10_PM_1_oqzrzf.jpg" 
-                        roundedCircle 
-                        className="me-3"
-                        style={{ width: '50px', height: '50px' }}
-                    />
+                    <Image
+            src={currentUserAvatar || DEFAULT_AVATAR}
+            roundedCircle
+            style={{ width: '45px', height: '45px', objectFit: 'cover', flexShrink: 0 }}
+        />
                     <Form className="flex-grow-1" onSubmit={handleSave}>
                         <Form.Control
                             as="textarea"
@@ -57,6 +61,7 @@ export default function ProfileMidBody({activeTab}) {
                     </Form>
                 </div>
             </div>
+            )}
 
             {/* CHANGE: Feed Tabs Indicator */}
             <div className="px-3 py-2 border-bottom">

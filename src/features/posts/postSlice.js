@@ -1,12 +1,12 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
+import { arrayRemove, arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 
 export const fetchPostsByUser = createAsyncThunk(
     'posts/fecthByUser',
-    async (userId) => {
+    async () => {
         try {
-            const postRef = collection(db, `users/${userId}/posts`)
+            const postRef = collection(db, `posts`)
             const querySnapShot = await getDocs(postRef)
             const docs = querySnapShot.docs.map((doc) => ({
                 id : doc.id,
@@ -24,14 +24,23 @@ export const fetchPostsByUser = createAsyncThunk(
 
 export const savePost = createAsyncThunk(
     'posts/savePost',
-    async({userId, postContent}) => {
+    async({userId, postContent,username}) => {
         try {
-            const postRef = collection(db, `users/${userId}/posts`)
-            console.log(`users/${userId}/posts`)
+            const postRef = collection(db, `posts`)
             const newRef = doc(postRef)
             console.log(postContent)
+
+            const profileRef = doc(db, 'bioInfo', userId)
+            const profileSnap = await getDoc(profileRef)
+            const avatarUrl = profileSnap.exists() ? profileSnap.data().avatarUrl || null : null
             
-            await setDoc(newRef, {content : postContent, likes: []})
+            await setDoc(newRef, {content : postContent,
+                 likes: [],
+                 userId : userId, // store who made it
+                 createdAt : new Date().toISOString(),
+                 username : username,
+                 avatarUrl : avatarUrl
+                })
             const newPost = await getDoc(newRef)
 
             const post = {
@@ -50,9 +59,9 @@ export const savePost = createAsyncThunk(
 
 export const EditPost = createAsyncThunk(
     'posts/editPost',
-    async({userId, postId, updatedContent}) => {
+    async({ postId, updatedContent}) => {
         try {
-            const postRef = doc(db, `users/${userId}/posts/${postId}`)
+            const postRef = doc(db, `posts/${postId}`)
             const docSnap = await getDoc(postRef)
             if (docSnap.exists()) {
                 await updateDoc(postRef, {
@@ -78,7 +87,7 @@ export const EditPost = createAsyncThunk(
 export const deletePost = createAsyncThunk(
     'post/deletePost',
     async ({userId, postId}) => {
-       try{ const postRef = doc(db, `users/${userId}/posts/${postId}`)
+       try{ const postRef = doc(db, `posts/${postId}`)
        const docSnap = await getDoc(postRef)
        if (docSnap.exists()) {
         await deleteDoc(postRef)
@@ -100,14 +109,11 @@ export const likePost = createAsyncThunk(
     'posts/likePost',
     async({userId, postId}) => {
         try {
-            const postRef = doc (db, `users/${userId}/posts/${postId}`)
-            const docSnap = await getDoc(postRef)
-            if (docSnap.exists()) {
-                const postData = docSnap.data()
-                const likes = [...postData.likes, userId]
-                await setDoc(postRef, {...postData, likes})   
-            }
-            return {userId, postId}
+            const postRef = doc (db, `posts/${postId}`)
+           await updateDoc(postRef, {
+            likes : arrayUnion(userId)
+           })
+           return {userId, postId}
         }
 
         catch (error) {
@@ -121,15 +127,10 @@ export const removeLikeFromPost = createAsyncThunk(
     'post/removeLikeFromPost',
     async({userId, postId}) => {
         try {
-            const postRef = doc(db, `users/${userId}/posts/${postId}`)
-            const docSnap = await getDoc(postRef)
-
-            if(docSnap.exists()) {
-                const postData = docSnap.data()
-                const likes = postData.likes.filter((id) => id !== userId)
-
-                await setDoc(postRef, {...postData, likes})
-            }
+            const postRef = doc(db, `posts/${postId}`)
+           await updateDoc(postRef, {
+            likes : arrayRemove(userId)
+           })
             return {userId, postId}
         }
         catch (error) {

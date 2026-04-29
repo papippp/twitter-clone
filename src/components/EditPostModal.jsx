@@ -4,9 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button, Form, Image, Modal } from "react-bootstrap";
 import { EditPost } from "../features/posts/postSlice";
 
-export default function EditPostModal({ show, handleClose, postId, userId }) {
+export default function EditPostModal({ show, handleClose, postId }) {
     const { isDark } = useTheme();
-    const pic = 'https://res.cloudinary.com/dqcztgs4v/image/upload/v1736165834/WhatsApp_Image_2025-01-06_at_7.09.10_PM_1_oqzrzf.jpg';
     
     const [postsContent, setPostsContent] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,12 +34,12 @@ export default function EditPostModal({ show, handleClose, postId, userId }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!postsContent.trim() || isSubmitting || !postId || !userId) return;
+        if (!postsContent.trim() || isSubmitting || !postId ) return;
 
         setIsSubmitting(true);
         try {
             const result = await dispatch(EditPost({ 
-                userId, 
+            
                 postId, 
                 updatedContent: postsContent 
             })).unwrap();
@@ -68,14 +67,6 @@ export default function EditPostModal({ show, handleClose, postId, userId }) {
             
             <Modal.Body className={`${isDark ? 'bg-dark text-light' : ''}`}>
                 <div className="d-flex gap-3">
-                    <div className="flex-shrink-0">
-                        <Image 
-                            src={pic} 
-                            roundedCircle 
-                            className="post-avatar"
-                            style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-                        />
-                    </div>
                     
                     <div className="flex-grow-1">
                         <Form onSubmit={handleSubmit}>

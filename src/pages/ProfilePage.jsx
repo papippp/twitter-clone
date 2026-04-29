@@ -1,42 +1,68 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { Button, Container, Navbar, Row, Col, Image } from 'react-bootstrap'
-import ProfileSideBar from '../components/ProfileSideBar'
-import { useNavigate } from 'react-router-dom'
-import ProfileMidBody from '../components/ProfileMidBody'
 import { getAuth } from 'firebase/auth'
-import { AuthContext } from '../components/AuthProvider'
-import { useTheme } from '../components/ThemeContext'
+import { useContext, useEffect, useState } from 'react'
+import { Button, Col, Container, Image, Navbar, Row } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import '../App.css'
-
+import { AuthContext } from '../components/AuthProvider'
+import EditProfileModal from '../components/EditProfileModal'
+import ProfileMidBody from '../components/ProfileMidBody'
+import ProfileSideBar from '../components/ProfileSideBar'
+import { useTheme } from '../components/ThemeContext'
+import { fetchFollowData, fetchSuggestedUsers, followUser } from '../features/posts/followSlice'
+import { fectchUserProfile } from '../features/posts/usersSlice'
 export default function ProfilePage() {
+    
     const auth = getAuth()
     const { currentUser } = useContext(AuthContext)
     const navigate = useNavigate()
     const { isDark, toggleTheme } = useTheme()
     const [activeTab, setActiveTab] = useState('tweets')
-    
-    // Clean mock data
-    const userProfile = {
-        name: currentUser?.email?.split('@')[0] || 'John Doe',
-        handle: currentUser?.email?.split('@')[0] || 'johndoe',
-        bio: "Building amazing things with React 🚀 | Web Developer | Tech Enthusiast",
-        location: "San Francisco, CA",
-        website: "johndoe.dev",
-        joinDate: "Joined March 2024",
-        following: 124,
-        followers: 1250,
-        tweets: 456,
-        coverPhoto: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
-        avatar: "https://res.cloudinary.com/dqcztgs4v/image/upload/v1736165834/WhatsApp_Image_2025-01-06_at_7.09.10_PM_1_oqzrzf.jpg"
-    }
-
-    useEffect(() => {
+    const dispatch = useDispatch()
+      useEffect(() => {
         if (!currentUser) {
             navigate('/')
         }
     }, [currentUser, navigate])
+
+    const {profile} = useSelector((state) => state.users)
+    const allPosts = useSelector((state) => state.posts.posts)
+    const myTweetCount = allPosts.filter((post) => post.userId === currentUser?.uid).length
+
+    const [showEditModal, setShowEditModal] = useState(false)
+    const  formatJoinDate = (isoString) => {
+        if (!isoString) return ''
+        return new Date(isoString).toLocaleDateString('en-Us', {
+            month : 'long',
+            year : 'numeric'
+        })
+    }
+   
+    const displayName = currentUser?.email?.split('@')[0] || 'user'
+    // Clean mock data
+    // "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
+    // "https://res.cloudinary.com/dqcztgs4v/image/upload/v1736165834/WhatsApp_Image_2025-01-06_at_7.09.10_PM_1_oqzrzf.jpg"
+    
+   const {followers, following, suggestedUsers} = useSelector((state) => state.follows)
+   useEffect(() => {
+    if (currentUser) {
+        dispatch(fetchFollowData(currentUser.uid))
+    }
+   },[currentUser, dispatch])
+  
+   useEffect(() => {
+    if (currentUser) {
+        dispatch(fetchSuggestedUsers(currentUser.uid))
+    }
+   }, [currentUser,dispatch])
     
     const handleLogout = () => auth.signOut()
+     useEffect(() => {
+        if (currentUser) {
+            dispatch(fectchUserProfile(currentUser.uid))
+            
+        }
+    }, [currentUser, dispatch])
     
     return (
         <div className={`profile-page ${isDark ? 'dark-theme' : ''}`}> 
@@ -74,38 +100,39 @@ export default function ProfilePage() {
             {/* Profile Header */}
             <div className="profile-header">
                 <div className="cover-photo-container">
-                    <Image src={userProfile.coverPhoto} className="cover-photo" />
+                    <Image src={profile?.coverUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"} className="cover-photo" />
                 </div>
                 
-                <Container>
+                <Container> 
                     <Row className="profile-info-row">
                         <Col md={8}>
                             <div className="profile-info-wrapper">
                                 <div className="profile-avatar-container">
-                                    <Image 
-                                        src={userProfile.avatar}
-                                        roundedCircle 
-                                        className="profile-avatar-large"
-                                    />
-                                </div>
+        <Image
+            src={profile?.avatarUrl || 'https://res.cloudinary.com/dqcztgs4v/image/upload/v1731486722/cld-sample.jpg'}
+            roundedCircle
+            className="profile-avatar-large"
+        />
+    </div>
                                 
                                 <div className="profile-user-info">
-                                    <h2 className="profile-name">{userProfile.name}</h2>
-                                    <p className="profile-handle">@{userProfile.handle}</p>
-                                    <p className="profile-bio">{userProfile.bio}</p>
+                                    <h2 className="profile-name">{displayName
+                                        }</h2>
+                                    <p className="profile-handle">@{displayName}</p>
+                                    <p className="profile-bio">{profile?.bio || 'No bio yet'}</p>
                                     
                                     <div className="profile-meta">
                                         <span className="meta-item">
-                                            <i className="bi bi-geo-alt"></i> {userProfile.location}
+                                            <i className="bi bi-geo-alt"></i> {profile?.location || 'No location yet'}
                                         </span>
                                         <span className="meta-item">
                                             <i className="bi bi-link"></i>
-                                            <a href={`https://${userProfile.website}`} target="_blank" rel="noopener noreferrer" className="profile-link ms-1">
-                                                {userProfile.website}
+                                            <a href={`https://${profile?.website}`} target="_blank" rel="noopener noreferrer" className="profile-link ms-1">
+                                                {profile?.website}
                                             </a>
                                         </span>
                                         <span className="meta-item">
-                                            <i className="bi bi-calendar3"></i> {userProfile.joinDate}
+                                            <i className="bi bi-calendar3"></i> {formatJoinDate(profile?.joinDate)}
                                         </span>
                                     </div>
                                 </div>
@@ -113,7 +140,7 @@ export default function ProfilePage() {
                         </Col>
                         
                         <Col md={4} className="edit-profile-col">
-                            <Button variant="outline-primary" className="edit-profile-btn">
+                            <Button onClick={() => setShowEditModal(true)} variant="outline-primary" className="edit-profile-btn">
                                 <i className="bi bi-pencil me-2"></i>
                                 Edit profile
                             </Button>
@@ -123,15 +150,15 @@ export default function ProfilePage() {
                     <Row className="profile-stats-row">
                         <Col>
                             <div className="stat-item">
-                                <span className="stat-value">{userProfile.following}</span>
+                                <span className="stat-value">{following.length}</span>
                                 <span className="stat-label">Following</span>
                             </div>
                             <div className="stat-item">
-                                <span className="stat-value">{userProfile.followers.toLocaleString()}</span>
+                                <span className="stat-value">{followers.length}</span>
                                 <span className="stat-label">Followers</span>
                             </div>
                             <div className="stat-item">
-                                <span className="stat-value">{userProfile.tweets}</span>
+                                <span className="stat-value">{myTweetCount}</span>
                                 <span className="stat-label">Tweets</span>
                             </div>
                         </Col>
@@ -187,19 +214,37 @@ export default function ProfilePage() {
                         
                         <div className="follow-widget mt-3">
                             <h5>Who to follow</h5>
-                            {[1, 2].map(i => (
-                                <div key={i} className="follow-item">
-                                    <Image src="https://res.cloudinary.com/dqcztgs4v/image/upload/v1731486722/cld-sample.jpg" roundedCircle />
-                                    <div className="follow-info">
-                                        <span className="follow-name">User {i}</span>
-                                        <span className="follow-handle">@user{i}</span>
+                            {suggestedUsers.length === 0 ? (
+                                <p className='text-muted small'> No suggestions right Now</p>
+                            ) : (
+                                suggestedUsers.map(user => (
+                                    <div key={user.id} className='follow-item'>
+                                        <img
+                                         src={user.avatarUrl ||  'https://res.cloudinary.com/dqcztgs4v/image/upload/v1731486722/cld-sample.jpg'}
+                                          alt={user.id}            
+                                          />
+                                          <div className='follow-info'>
+                                            <span className='follow-name'>{user.email?.split('@')[0]}</span>
+                                            <span className='follow-handle'>@{user.email?.split('@')[0]}</span>
+                                            </div>
+                                            <Button
+                                            size='sm' variant='outline-primary'
+                                            className='follow-btn' onClick={() => dispatch(followUser({
+                                                followerId : currentUser.uid,
+                                                followingId : user.id
+                                            }))}
+                                            >
+                                                follow
+                                            </Button>
+                                          
+
                                     </div>
-                                    <Button size="sm" variant="outline-primary" className="follow-btn">Follow</Button>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </Col>
                 </Row>
+                <EditProfileModal currentProfile={profile} onHide={() => setShowEditModal(false)} show={showEditModal}/>
             </Container>
         </div>
     )

@@ -23,10 +23,7 @@ export default function ProfileSideBar() {
           </Nav.Link>
         ))}
       </Nav>
-      <Button className='tweet-btn w-100 mt-3 rounded-pill py-3'>
-        <i className='bi bi-feather me-2'></i>
-        <span className='d-none d-md-inline'>Tweet</span>
-      </Button>
+      
     </div>
   )
 }
