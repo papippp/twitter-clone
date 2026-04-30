@@ -1,4 +1,4 @@
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth'
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
 import React, { useContext, useEffect, useState } from 'react'
 import { Button, Col, Form, Image, Modal, Row, Alert, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
@@ -19,7 +19,15 @@ export default function AuthPage() {
     const [validated, setValidated] = useState(false)
     const [showResetModal, setShowResetModal] = useState(false)
     const [resetEmail, setResetEmail] = useState('')
-    
+    const provider = new GoogleAuthProvider()
+    const handleGoogleLogin = async (e) => {
+        e.preventDefault()
+        try {
+            await signInWithPopup(auth,provider)
+        } catch (error) {
+            console.error(error)
+        }
+    }
     const navigate = useNavigate()
     const auth = getAuth()
     const { currentUser } = useContext(AuthContext)
@@ -211,7 +219,7 @@ export default function AuthPage() {
 
     return (
         <Row className="min-vh-100 align-items-center">
-            <Col md={6} className="p-0">
+            <Col md={6} className="d-none d-md-block p-0">
                 <Image 
                     src={loginImage} 
                     fluid 
@@ -219,11 +227,11 @@ export default function AuthPage() {
                     alt="Twitter background"
                 />
             </Col>
-            <Col md={6} className='p-5'>
-                <i className='bi bi-twitter' style={{ fontSize: 50, color: '#1DA1F2' }}></i>
+            <Col xs={12} md={6} className='p-4 p-sm-5'>
+                <i className='bi bi-twitter' style={{ fontSize: 'clamp(40px, 8vw, 50px)', color: '#1DA1F2' }}></i>
 
-                <p className='mt-4' style={{ fontSize: 64, fontWeight: 'bold' }}>Happening Now</p>
-                <h2 className='my-4' style={{ fontSize: 31 }}>Join Twitter Today</h2>
+                <p className='mt-4' style={{ fontSize: 'clamp(32px, 8vw, 64px)', fontWeight: 'bold',lineHeight :1.2 }}>Happening Now</p>
+                <h2 className='my-3 my-md-4' style={{ fontSize: 'clamp(20px, 5vw, 31px)' }}>Join Twitter Today</h2>
 
                 {/* Success Alert */}
                 {successMessage && (
@@ -232,14 +240,11 @@ export default function AuthPage() {
                     </Alert>
                 )}
 
-                <Col md={6} className='d-grid gap-2'>
-                    <Button className='rounded-pill' variant='outline-dark'>
+                <div  className='d-grid gap-2' style={{ maxWidth: '350px', width: '100%'}}>
+                    <Button onClick={handleGoogleLogin} className='rounded-pill' variant='outline-dark'>
                         <i className='bi bi-google me-2'></i> Sign up with Google
                     </Button>
 
-                    <Button className='rounded-pill' variant='outline-dark'>
-                        <i className='bi bi-apple me-2'></i> Sign up with Apple
-                    </Button>
                     
                     <div className="text-center my-2">
                         <hr className="my-0" />
@@ -259,16 +264,16 @@ export default function AuthPage() {
                         By signing up, you agree to the Terms of Service and Privacy Policy, including Cookie Use.
                     </p>
                     
-                    <p className='mt-4 fw-bold'>Already have an account?</p>
+                    <p className='mt-3 mt-md-4 fw-bold'>Already have an account?</p>
                     
                     <Button 
                         onClick={() => handleShow('login')} 
-                        className='rounded-pill'
+                        className='rounded-pill py-2'
                         variant='outline-primary'
                     >
                         Sign In
                     </Button>
-                </Col>
+                </div>
             </Col>
 
             {/* Auth Modal */}

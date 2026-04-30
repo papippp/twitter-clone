@@ -82,7 +82,7 @@ export default function ProfilePostCard({ post }) {
                     <small className="text-muted">{formatDate(post.createdAt)}</small>
                     
                     {/* CHANGE: Interactive action buttons */}
-                    <div className="post-actions d-flex justify-content-center align-items-center">
+                    <div className="post-actions d-flex flex-wrap justify-content-center align-items-center">
                         {post.userId === currentUser?.uid &&(
                         <Button onClick={handleShow} variant="link" className="action-btn">
                             <i className="bi bi-pencil"></i>                            
@@ -95,6 +95,7 @@ export default function ProfilePostCard({ post }) {
                             onClick={handleDelete}
                         >
                             <i className="bi bi-trash"></i>
+                            <span className="d-none d-sm-inline ms-1">Delete</span>
                             
                         </Button>
                         )}
@@ -109,13 +110,11 @@ export default function ProfilePostCard({ post }) {
                             
                         </Button>
                         
-                        <Button variant="link" className="action-btn">
-                            <i className="bi bi-ai"></i>
-                        </Button>
+                        
                         { !isOwnPost && (
                             <Button onClick={handleFollow} variant='link' className={`action-btn ${isFollowing ? 'text-primary' : 'text-muted'}`}>
                                 <i className={`bi ${isFollowing ? 'bi-person-check-fill' : 'bi-person-plus'}`}></i>
-        <span className='ms-1'>{isFollowing ? 'Following' : 'Follow'}</span>
+        <span className='d-none d-sm-inline ms-1'>{isFollowing ? 'Following' : 'Follow'}</span>
                             </Button>
                         )
 

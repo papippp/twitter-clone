@@ -1,0 +1,353 @@
+/* src/responsive.css - Add this to your project */
+
+/* ===== GLOBAL RESPONSIVE SETTINGS ===== */
+* {
+    box-sizing: border-box;
+}
+
+/* Better touch targets for mobile */
+button, 
+.btn, 
+.nav-link, 
+.action-btn,
+.icon-button {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* Minimum touch target size */
+.btn, 
+.icon-button,
+.action-btn {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ===== AUTH PAGE RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .auth-buttons-container {
+        width: 100% !important;
+    }
+}
+
+/* ===== PROFILE PAGE RESPONSIVE ===== */
+.profile-page {
+    min-height: 100vh;
+}
+
+/* Cover photo - responsive height */
+.cover-photo-container {
+    height: clamp(120px, 25vw, 200px);
+    overflow: hidden;
+}
+
+.cover-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Profile avatar - scales with screen */
+.profile-avatar-large {
+    width: clamp(60px, 15vw, 134px) !important;
+    height: clamp(60px, 15vw, 134px) !important;
+    border: 3px solid white;
+}
+
+.profile-avatar-container {
+    position: absolute;
+    top: clamp(-30px, -8vw, -60px);
+    left: 16px;
+}
+
+/* Profile info area */
+.profile-info-wrapper {
+    margin-top: clamp(30px, 10vw, 50px);
+    padding-right: 16px;
+}
+
+/* Stats - horizontally scrollable on mobile */
+.profile-stats-row {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+}
+
+.stat-item {
+    display: inline-block;
+    margin-right: 24px;
+}
+
+/* ===== SIDEBAR - BECOMES BOTTOM BAR ON MOBILE ===== */
+@media (max-width: 768px) {
+    .profile-sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        padding: 8px 0;
+        border-top: 1px solid #e1e8ed;
+    }
+    
+    .dark-theme .profile-sidebar {
+        background-color: #15202b;
+        border-top-color: #2c3e4e;
+    }
+    
+    .profile-sidebar .nav {
+        display: flex;
+        flex-direction: row !important;
+        justify-content: space-around;
+        margin: 0;
+    }
+    
+    .profile-sidebar .icon-button {
+        padding: 8px !important;
+        min-height: 44px;
+    }
+    
+    .profile-sidebar .icon-button span {
+        display: none !important;
+    }
+    
+    /* Add padding to bottom of main content so bottom bar doesn't cover content */
+    .profile-page > .container:last-child {
+        padding-bottom: 70px;
+    }
+}
+
+/* ===== POST CARDS RESPONSIVE ===== */
+.post-card {
+    margin: 0;
+    border-bottom: 1px solid #e1e8ed;
+}
+
+.post-card.dark {
+    border-bottom-color: #2c3e4e;
+}
+
+@media (min-width: 768px) {
+    .post-card {
+        border-radius: 16px;
+        border: 1px solid #e1e8ed;
+        margin-bottom: 12px;
+    }
+    
+    .dark-theme .post-card {
+        border-color: #2c3e4e;
+    }
+}
+
+/* Post content - prevent overflow */
+.post-content {
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+/* Post action buttons - responsive layout */
+.post-actions {
+    gap: 8px;
+    margin-top: 12px;
+}
+
+@media (min-width: 576px) {
+    .post-actions {
+        gap: 16px;
+    }
+}
+
+.action-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+    border-radius: 9999px;
+}
+
+/* ===== COMPOSE TWEET AREA ===== */
+.compose-tweet .tweet-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    resize: none;
+}
+
+.compose-tweet .tweet-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+/* ===== TRENDS & FOLLOW WIDGETS ===== */
+.trends-widget, 
+.follow-widget {
+    padding: 16px;
+    border-radius: 16px;
+    background-color: #f5f5f5;
+}
+
+.dark-theme .trends-widget,
+.dark-theme .follow-widget {
+    background-color: #15202b;
+}
+
+.trend-item, 
+.follow-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #e1e8ed;
+    cursor: pointer;
+}
+
+.dark-theme .trend-item,
+.dark-theme .follow-item {
+    border-bottom-color: #2c3e4e;
+}
+
+.trend-item:last-child,
+.follow-item:last-child {
+    border-bottom: none;
+}
+
+.trend-category {
+    font-size: 12px;
+    color: #657786;
+}
+
+.trend-name {
+    font-weight: bold;
+    display: block;
+    margin: 4px 0;
+}
+
+.trend-count {
+    font-size: 12px;
+    color: #657786;
+}
+
+/* Follow item layout */
+.follow-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.follow-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.follow-info {
+    flex: 1;
+}
+
+.follow-name {
+    font-weight: bold;
+    display: block;
+}
+
+.follow-handle {
+    font-size: 12px;
+    color: #657786;
+}
+
+.follow-btn {
+    font-size: 13px;
+    padding: 4px 12px;
+}
+
+/* ===== MODAL RESPONSIVE ===== */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0;
+        height: 100%;
+    }
+    
+    .modal-content {
+        border-radius: 20px 20px 0 0;
+        min-height: 50vh;
+    }
+    
+    .modal-dialog-centered {
+        align-items: flex-end;
+    }
+    
+    .modal-body {
+        padding: 20px !important;
+    }
+}
+
+/* Edit profile modal - image upload area */
+.position-relative.mb-5 {
+    margin-bottom: 60px !important;
+}
+
+/* ===== NAVBAR RESPONSIVE ===== */
+.profile-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+.dark-theme .profile-navbar {
+    background-color: rgba(21, 32, 43, 0.95);
+}
+
+/* ===== TAB BAR RESPONSIVE ===== */
+.profile-tabs .tabs-container {
+    display: flex;
+    width: 100%;
+    max-width: 400px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 16px 8px;
+    background: none;
+    border: none;
+    font-weight: bold;
+    color: #657786;
+    position: relative;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: #1da1f2;
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background-color: #1da1f2;
+    border-radius: 3px;
+}
+
+/* ===== TABLET ADJUSTMENTS ===== */
+@media (min-width: 768px) and (max-width: 991px) {
+    .edit-profile-col {
+        text-align: right;
+    }
+    
+    .edit-profile-btn {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+/* ===== DESKTOP ===== */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+}
